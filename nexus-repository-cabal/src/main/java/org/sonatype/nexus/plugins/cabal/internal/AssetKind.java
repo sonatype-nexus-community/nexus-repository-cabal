@@ -26,7 +26,13 @@ public enum AssetKind
 {
   // @todo Change these enums as needed for this format
   PACKAGES(METADATA),
-  ARCHIVE(CONTENT);
+  ARCHIVE(CONTENT),
+  CABAL(METADATA),
+  INCREMENTAL_PACKAGE_INDEX(METADATA),
+  TIMESTAMP(METADATA),
+  SNAPSHOT(METADATA),
+  MIRRORS(METADATA),
+  ROOT(METADATA);
 
   private final CacheType cacheType;
 

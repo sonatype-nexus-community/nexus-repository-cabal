@@ -40,6 +40,7 @@ import org.sonatype.nexus.repository.view.handlers.ExceptionHandler
 import org.sonatype.nexus.repository.view.handlers.HandlerContributor
 import org.sonatype.nexus.repository.view.handlers.TimingHandler
 import org.sonatype.nexus.repository.view.matchers.ActionMatcher
+import org.sonatype.nexus.repository.view.matchers.LiteralMatcher
 import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher
 
@@ -115,7 +116,31 @@ abstract class CabalRecipeSupport
   // @todo Add/change matcher methods here
 
   static Matcher packageCabalMatcher() {
-    buildTokenMatcherForPatternAndAssetKind("/package/{packageName:.+}-{version:.+}/{fileName:.+}.tar.gz", AssetKind.ARCHIVE, GET, HEAD)
+    buildTokenMatcherForPatternAndAssetKind("/package/{fileName:.+}.tar.gz", AssetKind.ARCHIVE, GET, HEAD)
+  }
+
+  static Matcher cabalMatcher() {
+    buildTokenMatcherForPatternAndAssetKind("/package/{packageName:.+}-{version:.+}/{fileName:.+}.cabal", AssetKind.CABAL, GET, HEAD)
+  }
+
+  static Matcher incrementalPackageMatcher() {
+    buildTokenMatcherForPatternAndAssetKind("/{version:.+}-index.tar.gz", AssetKind.INCREMENTAL_PACKAGE_INDEX, GET, HEAD)
+  }
+
+  static Matcher timestampMatcher() {
+    buildLiteralMatcherForPatternAndAssetKind("/timestamp.json", AssetKind.TIMESTAMP, GET, HEAD)
+  }
+
+  static Matcher snapshotMatcher() {
+    buildLiteralMatcherForPatternAndAssetKind("/snapshot.json", AssetKind.SNAPSHOT, GET, HEAD)
+  }
+
+  static Matcher mirrorsMatcher() {
+    buildLiteralMatcherForPatternAndAssetKind("/mirrors.json", AssetKind.MIRRORS, GET, HEAD)
+  }
+
+  static Matcher rootMatcher() {
+    buildLiteralMatcherForPatternAndAssetKind("/root.json", AssetKind.ROOT, GET, HEAD)
   }
 
   static Matcher assetCabalMatcher() {
@@ -137,5 +162,22 @@ abstract class CabalRecipeSupport
         }
     )
   }
+
+  static Matcher buildLiteralMatcherForPatternAndAssetKind(final String pattern,
+                                                           final AssetKind assetKind,
+                                                           final String... actions) {
+    LogicMatchers.and(
+        new ActionMatcher(actions),
+        new LiteralMatcher(pattern),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(AssetKind.class, assetKind)
+            return true
+          }
+        }
+    )
+  }
+
 
 }

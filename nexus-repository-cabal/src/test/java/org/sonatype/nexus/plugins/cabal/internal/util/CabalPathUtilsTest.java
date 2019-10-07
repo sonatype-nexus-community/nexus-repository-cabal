@@ -48,7 +48,7 @@ public class CabalPathUtilsTest
   public void buildAssetPath() {
     String result = underTest.buildAssetPath(state);
 
-    assertThat(result, is(equalTo("package/packageName-version/fileName.tar.gz")));
+    assertThat(result, is(equalTo("package/fileName.tar.gz")));
   }
 
   private Map<String, String> setupTokens() {

@@ -77,12 +77,28 @@ public class CabalProxyFacetImpl
   @Override
   protected Content getCachedContent(final Context context) {
     AssetKind assetKind = context.getAttributes().require(AssetKind.class);
-    TokenMatcher.State matcherState = cabalPathUtils.matcherState(context);
+    TokenMatcher.State matcherState;
     switch (assetKind) {
       case PACKAGES:
+        matcherState = cabalPathUtils.matcherState(context);
         return getAsset(cabalPathUtils.buildAssetPath(matcherState, PACKAGE_FILENAME));
       case ARCHIVE:
+        matcherState = cabalPathUtils.matcherState(context);
         return getAsset(cabalPathUtils.buildAssetPath(matcherState));
+      case CABAL:
+        matcherState = cabalPathUtils.matcherState(context);
+        return getAsset(cabalPathUtils.buildCabalAssetPath(matcherState));
+      case INCREMENTAL_PACKAGE_INDEX:
+        matcherState = cabalPathUtils.matcherState(context);
+        return getAsset(cabalPathUtils.buildIncrementalAssetPath(matcherState));
+      case TIMESTAMP:
+        return getAsset("timestamp.json");
+      case SNAPSHOT:
+        return getAsset("snapshot.json");
+      case MIRRORS:
+        return getAsset("mirrors.json");
+      case ROOT:
+        return getAsset("root.json");
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
     }
@@ -102,16 +118,44 @@ public class CabalProxyFacetImpl
   @Override
   protected Content store(final Context context, final Content content) throws IOException {
     AssetKind assetKind = context.getAttributes().require(AssetKind.class);
-    TokenMatcher.State matcherState = cabalPathUtils.matcherState(context);
+    TokenMatcher.State matcherState;
     switch (assetKind) {
       case PACKAGES:
+        matcherState = cabalPathUtils.matcherState(context);
         return putMetadata(content,
             assetKind,
             cabalPathUtils.buildAssetPath(matcherState, PACKAGE_FILENAME));
       case ARCHIVE:
+        matcherState = cabalPathUtils.matcherState(context);
         return putCabalPackage(content,
             assetKind,
             cabalPathUtils.buildAssetPath(matcherState));
+      case CABAL:
+        matcherState = cabalPathUtils.matcherState(context);
+        return putMetadata(content,
+            assetKind,
+            cabalPathUtils.buildCabalAssetPath(matcherState));
+      case INCREMENTAL_PACKAGE_INDEX:
+        matcherState = cabalPathUtils.matcherState(context);
+        return putMetadata(content,
+            assetKind,
+            cabalPathUtils.buildIncrementalAssetPath(matcherState));
+      case TIMESTAMP:
+        return putMetadata(content,
+            assetKind,
+            "timestamp.json");
+      case SNAPSHOT:
+        return putMetadata(content,
+            assetKind,
+            "snapshot.json");
+      case MIRRORS:
+        return putMetadata(content,
+            assetKind,
+            "mirrors.json");
+      case ROOT:
+        return putMetadata(content,
+            assetKind,
+            "root.json");
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
     }

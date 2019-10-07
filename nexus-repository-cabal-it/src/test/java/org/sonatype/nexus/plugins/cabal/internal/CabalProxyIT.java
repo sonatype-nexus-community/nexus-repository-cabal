@@ -39,11 +39,19 @@ public class CabalProxyIT
   // @todo Change test path for your format
   private static final String TEST_PATH = "some/valid/path/for/your/remote/" + PACKAGE_FILENAME;
 
-  public static final String PACKAGE_ALGO_RHYTHM_0_1_0_0_ALGO_RHYTHM_0_1_0_0_TAR_GZ =
-      "package/AlgoRhythm-0.1.0.0/AlgoRhythm-0.1.0.0.tar.gz";
+  private static final String PACKAGE_ALGO_RHYTHM_0_1_0_0_ALGO_RHYTHM_0_1_0_0_TAR_GZ = "package/AlgoRhythm-0.1.0.0/AlgoRhythm-0.1.0.0.tar.gz";
 
-  public static final String PACKAGE_ALGO_RHYTHM_CABAL =
-      "package/AlgoRhythm-0.1.0.0/AlgoRhythm.cabal";
+  private static final String PACKAGE_ALGO_RHYTHM_CABAL = "package/AlgoRhythm-0.1.0.0/AlgoRhythm.cabal";
+
+  private static final String INCREMENTAL_INDEX = "01-index.tar.gz";
+
+  private static final String TIMESTAMP = "timestamp.json";
+
+  private static final String SNAPSHOT = "snapshot.json";
+
+  private static final String MIRRORS = "mirrors.json";
+
+  private static final String ROOT = "root.json";
 
   private CabalClient proxyClient;
 
@@ -109,8 +117,79 @@ public class CabalProxyIT
       server.stop();
     }
     final Asset asset = findAsset(proxyRepo, PACKAGE_ALGO_RHYTHM_CABAL);
-    System.out.println(asset);
     assertThat(status(proxyClient.get(PACKAGE_ALGO_RHYTHM_CABAL)), is(200));
+  }
+
+  @Test
+  public void retrieveIncrementalIndexWhenRemoteOnline() throws Exception {
+    Server server = Server.withPort(0)
+        .serve("/" + INCREMENTAL_INDEX)
+        .withBehaviours(Behaviours.file(testData.resolveFile("01-index.tar.gz")))
+        .start();
+    try {
+      proxyRepo = repos.createCabalProxy("cabal-test-proxy-online", server.getUrl().toExternalForm());
+      proxyClient = cabalClient(proxyRepo);
+      proxyClient.get(INCREMENTAL_INDEX);
+    }
+    finally {
+      server.stop();
+    }
+    final Asset asset = findAsset(proxyRepo, INCREMENTAL_INDEX);
+    assertThat(status(proxyClient.get(INCREMENTAL_INDEX)), is(200));
+  }
+
+  @Test
+  public void retrievetimeStampWhenRemoteOnline() throws Exception {
+    Server server = Server.withPort(0)
+        .serve("/" + TIMESTAMP)
+        .withBehaviours(Behaviours.file(testData.resolveFile("timestamp.json")))
+        .start();
+    try {
+      proxyRepo = repos.createCabalProxy("cabal-test-proxy-online", server.getUrl().toExternalForm());
+      proxyClient = cabalClient(proxyRepo);
+      proxyClient.get(TIMESTAMP);
+    }
+    finally {
+      server.stop();
+    }
+    final Asset asset = findAsset(proxyRepo, TIMESTAMP);
+    assertThat(status(proxyClient.get(TIMESTAMP)), is(200));
+  }
+
+  @Test
+  public void retrieveMirrorsJSONWhenRemoteOnline() throws Exception {
+    Server server = Server.withPort(0)
+        .serve("/" + MIRRORS)
+        .withBehaviours(Behaviours.file(testData.resolveFile("mirrors.json")))
+        .start();
+    try {
+      proxyRepo = repos.createCabalProxy("cabal-test-proxy-online", server.getUrl().toExternalForm());
+      proxyClient = cabalClient(proxyRepo);
+      proxyClient.get(MIRRORS);
+    }
+    finally {
+      server.stop();
+    }
+    final Asset asset = findAsset(proxyRepo, MIRRORS);
+    assertThat(status(proxyClient.get(MIRRORS)), is(200));
+  }
+
+  @Test
+  public void retrieveRootJSONWhenRemoteOnline() throws Exception {
+    Server server = Server.withPort(0)
+        .serve("/" + ROOT)
+        .withBehaviours(Behaviours.file(testData.resolveFile("root.json")))
+        .start();
+    try {
+      proxyRepo = repos.createCabalProxy("cabal-test-proxy-online", server.getUrl().toExternalForm());
+      proxyClient = cabalClient(proxyRepo);
+      proxyClient.get(ROOT);
+    }
+    finally {
+      server.stop();
+    }
+    final Asset asset = findAsset(proxyRepo, ROOT);
+    assertThat(status(proxyClient.get(ROOT)), is(200));
   }
 
   //@Test

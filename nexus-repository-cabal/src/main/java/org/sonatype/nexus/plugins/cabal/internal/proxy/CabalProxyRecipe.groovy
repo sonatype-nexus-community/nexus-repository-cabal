@@ -89,7 +89,7 @@ class CabalProxyRecipe
     addBrowseUnsupportedRoute(builder)
 
     // @todo Add matcher methods to this list
-    [packageCabalMatcher(), assetCabalMatcher()].each { matcher ->
+    [packageCabalMatcher(), assetCabalMatcher(), cabalMatcher(), incrementalPackageMatcher(), timestampMatcher(), snapshotMatcher(), mirrorsMatcher(), rootMatcher()].each { matcher ->
       builder.route(new Route.Builder().matcher(matcher)
           .handler(timingHandler)
           .handler(securityHandler)

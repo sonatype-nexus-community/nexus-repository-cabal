@@ -63,10 +63,14 @@ public class CabalPathUtils
   }
 
   public String buildAssetPath(final State matcherState) {
-    return String.format("package/%s-%s/%s.tar.gz", packageName(matcherState), version(matcherState), fileName(matcherState));
+    return String.format("package/%s.tar.gz", fileName(matcherState));
   }
 
   public String buildCabalAssetPath(final State matcherState) {
     return String.format("package/%s-%s/%s.cabal", packageName(matcherState), version(matcherState), fileName(matcherState));
+  }
+
+  public String buildIncrementalAssetPath(final State matcherState) {
+    return String.format("%s-index.tar.gz", version(matcherState));
   }
 }
