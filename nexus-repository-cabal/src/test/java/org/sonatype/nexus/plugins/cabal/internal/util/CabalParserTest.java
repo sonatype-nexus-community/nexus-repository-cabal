@@ -41,5 +41,11 @@ public class CabalParserTest
 
     assertThat(cabalAttributes.get("name"), is(equalTo("AlgoRhythm")));
     assertThat(cabalAttributes.get("version"), is(equalTo("0.1.0.0")));
+
+    is = getClass().getResourceAsStream("titlecase.cabal");
+    Map<String, Object> cabalTitleCaseAttributes = underTest.loadAttributes(is);
+
+    assertThat(cabalTitleCaseAttributes.get("name"), is(equalTo("titlecase")));
+    assertThat(cabalTitleCaseAttributes.get("version"), is(equalTo("1.0.1")));
   }
 }
