@@ -74,7 +74,7 @@ For simplicity, you should check `Enable anonymous access` in the prompts follow
 
 ## Using Cabal With Nexus Repository Manager 3
 
-[We have detailed instructions on how to get started here!](docs/Cabal_USER_DOCUMENTATION.md)
+[We have detailed instructions on how to get started here!](docs/CABAL_USER_DOCUMENTATION.md)
 
 ## Compatibility with Nexus Repository Manager 3 Versions
 
