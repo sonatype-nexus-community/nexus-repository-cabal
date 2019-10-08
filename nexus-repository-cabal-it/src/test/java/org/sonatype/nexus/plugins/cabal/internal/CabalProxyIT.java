@@ -18,10 +18,13 @@ import org.sonatype.nexus.pax.exam.NexusPaxExamSupport;
 import org.sonatype.nexus.repository.Repository;
 import org.sonatype.nexus.repository.http.HttpStatus;
 import org.sonatype.nexus.repository.storage.Asset;
+import org.sonatype.nexus.repository.storage.Component;
 import org.sonatype.nexus.testsuite.testsupport.FormatClientSupport;
 import org.sonatype.nexus.testsuite.testsupport.NexusITSupport;
 
 import org.hamcrest.MatcherAssert;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.ops4j.pax.exam.Configuration;
 import org.ops4j.pax.exam.Option;
@@ -39,23 +42,53 @@ public class CabalProxyIT
   // @todo Change test path for your format
   private static final String TEST_PATH = "some/valid/path/for/your/remote/" + PACKAGE_FILENAME;
 
-  private static final String PACKAGE_ALGO_RHYTHM_0_1_0_0_ALGO_RHYTHM_0_1_0_0_TAR_GZ = "package/AlgoRhythm-0.1.0.0/AlgoRhythm-0.1.0.0.tar.gz";
+  private static final String VERSION = "0.1.0.0";
 
-  private static final String PACKAGE_ALGO_RHYTHM_CABAL = "package/AlgoRhythm-0.1.0.0/AlgoRhythm.cabal";
+  private static final String NAME_PACKAGE = "AlgoRhythm";
 
-  private static final String INCREMENTAL_INDEX = "01-index.tar.gz";
+  private static final String EXTENSION_TAR_GZ = ".tar.gz";
 
-  private static final String TIMESTAMP = "timestamp.json";
+  private static final String EXTENSION_CABAL = ".cabal";
 
-  private static final String SNAPSHOT = "snapshot.json";
+  private static final String EXTENSION_JSON = ".json";
 
-  private static final String MIRRORS = "mirrors.json";
+  private static final String NAME_INCREMENTAL_INDEX = "01-index";
 
-  private static final String ROOT = "root.json";
+  private static final String NAME_TIMESTAMP = "timestamp";
+
+  private static final String NAME_SNAPSHOT = "snapshot";
+
+  private static final String NAME_MIRRORS = "mirrors";
+
+  private static final String NAME_ROOT = "root";
+
+  private static final String FILE_INCREMENTAL_INDEX = NAME_INCREMENTAL_INDEX + EXTENSION_TAR_GZ;
+
+  private static final String FILE_TIMESTAMP = NAME_TIMESTAMP + EXTENSION_JSON;
+
+  private static final String FILE_SNAPSHOT = NAME_SNAPSHOT + EXTENSION_JSON;
+
+  private static final String FILE_MIRRORS = NAME_MIRRORS + EXTENSION_JSON;
+
+  private static final String FILE_ROOT = NAME_ROOT + EXTENSION_JSON;
+
+  private static final String FILE_TAR_GZ_PACKAGE = NAME_PACKAGE + "-" + VERSION + EXTENSION_TAR_GZ;
+
+  private static final String FILE_CABAL_PACKAGE = NAME_PACKAGE + EXTENSION_CABAL;
+  
+  private static final String DIRECTORY_PACKAGE = "package/" + NAME_PACKAGE + "-" + VERSION + "/";
+  
+  private static final String DIRECTORY_INVALID = "this/is/a/bad/path/";
+
+  private static final String PATH_TAR_GZ_PACKAGE = DIRECTORY_PACKAGE + FILE_TAR_GZ_PACKAGE;
+
+  private static final String PATH_CABAL_PACKAGE = DIRECTORY_PACKAGE + FILE_CABAL_PACKAGE;
 
   private CabalClient proxyClient;
 
   private Repository proxyRepo;
+
+  private Server server;
 
   @Configuration
   public static Option[] configureNexus() {
@@ -65,131 +98,99 @@ public class CabalProxyIT
     );
   }
 
+  @Before
+  public void setup() throws Exception {
+    server = Server.withPort(0)
+        .serve("/" + PATH_TAR_GZ_PACKAGE)
+        .withBehaviours(Behaviours.file(testData.resolveFile(FILE_TAR_GZ_PACKAGE)))
+        .serve("/" + PATH_CABAL_PACKAGE)
+        .withBehaviours(Behaviours.file(testData.resolveFile(FILE_CABAL_PACKAGE)))
+        .serve("/" + FILE_INCREMENTAL_INDEX)
+        .withBehaviours(Behaviours.file(testData.resolveFile(FILE_INCREMENTAL_INDEX)))
+        .serve("/" + FILE_TIMESTAMP)
+        .withBehaviours(Behaviours.file(testData.resolveFile(FILE_TIMESTAMP)))
+        .serve("/" + FILE_SNAPSHOT)
+        .withBehaviours(Behaviours.file(testData.resolveFile(FILE_SNAPSHOT)))
+        .serve("/" + FILE_MIRRORS)
+        .withBehaviours(Behaviours.file(testData.resolveFile(FILE_MIRRORS)))
+        .serve("/" + FILE_ROOT)
+        .withBehaviours(Behaviours.file(testData.resolveFile(FILE_ROOT)))
+        .start();
+
+    proxyRepo = repos.createCabalProxy("cabal-test-proxy-online", server.getUrl().toExternalForm());
+    proxyClient = cabalClient(proxyRepo);
+  }
+
   @Test
   public void unresponsiveRemoteProduces404() throws Exception {
-    Server server = Server.withPort(0).serve("/*")
+    Server serverUnresponsive = Server.withPort(0).serve("/*")
         .withBehaviours(error(HttpStatus.NOT_FOUND))
         .start();
     try {
-      proxyRepo = repos.createCabalProxy("cabal-test-proxy-notfound", server.getUrl().toExternalForm());
-      proxyClient = cabalClient(proxyRepo);
-      MatcherAssert.assertThat(FormatClientSupport.status(proxyClient.get(TEST_PATH)), is(HttpStatus.NOT_FOUND));
+      Repository proxyRepoUnresponsive =
+          repos.createCabalProxy("cabal-test-proxy-notfound", serverUnresponsive.getUrl().toExternalForm());
+      CabalClient proxyClientUnresponsive = cabalClient(proxyRepoUnresponsive);
+      MatcherAssert.assertThat(FormatClientSupport.status(proxyClientUnresponsive.get(PATH_TAR_GZ_PACKAGE)), is(HttpStatus.NOT_FOUND));
     }
     finally {
-      server.stop();
+      serverUnresponsive.stop();
     }
   }
 
 
   @Test
   public void retrievePackageWhenRemoteOnline() throws Exception {
-    Server server = Server.withPort(0)
-        .serve("/" + PACKAGE_ALGO_RHYTHM_0_1_0_0_ALGO_RHYTHM_0_1_0_0_TAR_GZ)
-        .withBehaviours(Behaviours.file(testData.resolveFile("AlgoRhythm-0.1.0.0.tar.gz")))
-        .start();
-    try {
-      proxyRepo = repos.createCabalProxy("cabal-test-proxy-online", server.getUrl().toExternalForm());
-      proxyClient = cabalClient(proxyRepo);
-      proxyClient.get(PACKAGE_ALGO_RHYTHM_0_1_0_0_ALGO_RHYTHM_0_1_0_0_TAR_GZ);
-    }
-    finally {
-      server.stop();
-    }
-    final Asset asset = findAsset(proxyRepo, PACKAGE_ALGO_RHYTHM_0_1_0_0_ALGO_RHYTHM_0_1_0_0_TAR_GZ);
+    proxyClient.get(PATH_TAR_GZ_PACKAGE);
+    assertThat(status(proxyClient.get(PATH_TAR_GZ_PACKAGE)), is(200));
+
+    final Component component = findComponent(proxyRepo, NAME_PACKAGE);
+    assertThat(component.version(), is(VERSION));
+    assertThat(component.name(), is (NAME_PACKAGE));
+
+    final Asset asset = findAsset(proxyRepo, PATH_TAR_GZ_PACKAGE);
     assertThat(asset.format(), is("cabal"));
-    assertThat(asset.name(), is("package/AlgoRhythm-0.1.0.0/AlgoRhythm-0.1.0.0.tar.gz"));
+    assertThat(asset.name(), is(PATH_TAR_GZ_PACKAGE));
     assertThat(asset.contentType(), is("application/x-gzip"));
-    assertThat(status(proxyClient.get(PACKAGE_ALGO_RHYTHM_0_1_0_0_ALGO_RHYTHM_0_1_0_0_TAR_GZ)), is(200));
   }
 
   @Test
   public void retrieveCabalFileWhenRemoteOnline() throws Exception {
-    Server server = Server.withPort(0)
-        .serve("/" + PACKAGE_ALGO_RHYTHM_CABAL)
-        .withBehaviours(Behaviours.file(testData.resolveFile("AlgoRhythm.cabal")))
-        .start();
-    try {
-      proxyRepo = repos.createCabalProxy("cabal-test-proxy-online", server.getUrl().toExternalForm());
-      proxyClient = cabalClient(proxyRepo);
-      proxyClient.get(PACKAGE_ALGO_RHYTHM_CABAL);
-    }
-    finally {
-      server.stop();
-    }
-    final Asset asset = findAsset(proxyRepo, PACKAGE_ALGO_RHYTHM_CABAL);
-    assertThat(status(proxyClient.get(PACKAGE_ALGO_RHYTHM_CABAL)), is(200));
+    proxyClient.get(PATH_CABAL_PACKAGE);
+
+    final Asset asset = findAsset(proxyRepo, PATH_CABAL_PACKAGE);
+    assertThat(status(proxyClient.get(PATH_CABAL_PACKAGE)), is(200));
   }
 
   @Test
   public void retrieveIncrementalIndexWhenRemoteOnline() throws Exception {
-    Server server = Server.withPort(0)
-        .serve("/" + INCREMENTAL_INDEX)
-        .withBehaviours(Behaviours.file(testData.resolveFile("01-index.tar.gz")))
-        .start();
-    try {
-      proxyRepo = repos.createCabalProxy("cabal-test-proxy-online", server.getUrl().toExternalForm());
-      proxyClient = cabalClient(proxyRepo);
-      proxyClient.get(INCREMENTAL_INDEX);
-    }
-    finally {
-      server.stop();
-    }
-    final Asset asset = findAsset(proxyRepo, INCREMENTAL_INDEX);
-    assertThat(status(proxyClient.get(INCREMENTAL_INDEX)), is(200));
+    proxyClient.get(FILE_INCREMENTAL_INDEX);
+
+    final Asset asset = findAsset(proxyRepo, FILE_INCREMENTAL_INDEX);
+    assertThat(status(proxyClient.get(FILE_INCREMENTAL_INDEX)), is(200));
   }
 
   @Test
   public void retrievetimeStampWhenRemoteOnline() throws Exception {
-    Server server = Server.withPort(0)
-        .serve("/" + TIMESTAMP)
-        .withBehaviours(Behaviours.file(testData.resolveFile("timestamp.json")))
-        .start();
-    try {
-      proxyRepo = repos.createCabalProxy("cabal-test-proxy-online", server.getUrl().toExternalForm());
-      proxyClient = cabalClient(proxyRepo);
-      proxyClient.get(TIMESTAMP);
-    }
-    finally {
-      server.stop();
-    }
-    final Asset asset = findAsset(proxyRepo, TIMESTAMP);
-    assertThat(status(proxyClient.get(TIMESTAMP)), is(200));
+    proxyClient.get(FILE_TIMESTAMP);
+
+    final Asset asset = findAsset(proxyRepo, FILE_TIMESTAMP);
+    assertThat(status(proxyClient.get(FILE_TIMESTAMP)), is(200));
   }
 
   @Test
   public void retrieveMirrorsJSONWhenRemoteOnline() throws Exception {
-    Server server = Server.withPort(0)
-        .serve("/" + MIRRORS)
-        .withBehaviours(Behaviours.file(testData.resolveFile("mirrors.json")))
-        .start();
-    try {
-      proxyRepo = repos.createCabalProxy("cabal-test-proxy-online", server.getUrl().toExternalForm());
-      proxyClient = cabalClient(proxyRepo);
-      proxyClient.get(MIRRORS);
-    }
-    finally {
-      server.stop();
-    }
-    final Asset asset = findAsset(proxyRepo, MIRRORS);
-    assertThat(status(proxyClient.get(MIRRORS)), is(200));
+    proxyClient.get(FILE_MIRRORS);
+
+    final Asset asset = findAsset(proxyRepo, FILE_MIRRORS);
+    assertThat(status(proxyClient.get(FILE_MIRRORS)), is(200));
   }
 
   @Test
   public void retrieveRootJSONWhenRemoteOnline() throws Exception {
-    Server server = Server.withPort(0)
-        .serve("/" + ROOT)
-        .withBehaviours(Behaviours.file(testData.resolveFile("root.json")))
-        .start();
-    try {
-      proxyRepo = repos.createCabalProxy("cabal-test-proxy-online", server.getUrl().toExternalForm());
-      proxyClient = cabalClient(proxyRepo);
-      proxyClient.get(ROOT);
-    }
-    finally {
-      server.stop();
-    }
-    final Asset asset = findAsset(proxyRepo, ROOT);
-    assertThat(status(proxyClient.get(ROOT)), is(200));
+    proxyClient.get(FILE_ROOT);
+
+    final Asset asset = findAsset(proxyRepo, FILE_ROOT);
+    assertThat(status(proxyClient.get(FILE_ROOT)), is(200));
   }
 
   //@Test
@@ -207,4 +208,9 @@ public class CabalProxyIT
   //  }
   //  assertThat(status(proxyClient.get(TEST_PATH)), is(200));
   //}
+
+  @After
+  public void tearDown() throws Exception {
+    server.stop();
+  }
 }
