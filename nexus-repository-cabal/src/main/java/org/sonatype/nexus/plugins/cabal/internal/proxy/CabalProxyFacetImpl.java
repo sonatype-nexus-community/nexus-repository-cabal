@@ -13,6 +13,7 @@
 package org.sonatype.nexus.plugins.cabal.internal.proxy;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,7 +22,9 @@ import javax.inject.Named;
 
 import org.sonatype.nexus.plugins.cabal.internal.AssetKind;
 import org.sonatype.nexus.plugins.cabal.internal.util.CabalDataAccess;
+import org.sonatype.nexus.plugins.cabal.internal.util.CabalParser;
 import org.sonatype.nexus.plugins.cabal.internal.util.CabalPathUtils;
+import org.sonatype.nexus.plugins.cabal.internal.util.TgzParser;
 import org.sonatype.nexus.repository.cache.CacheInfo;
 import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.proxy.ProxyFacet;
@@ -41,7 +44,6 @@ import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
 import org.sonatype.nexus.transaction.UnitOfWork;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.sonatype.nexus.plugins.cabal.internal.util.CabalPathUtils.ASSET_FILENAME;
 import static org.sonatype.nexus.plugins.cabal.internal.util.CabalPathUtils.PACKAGE_FILENAME;
 import static org.sonatype.nexus.repository.storage.AssetEntityAdapter.P_ASSET_KIND;
 
@@ -59,12 +61,20 @@ public class CabalProxyFacetImpl
 
   private CabalDataAccess cabalDataAccess;
 
+  private CabalParser cabalParser;
+
+  private TgzParser tgzParser;
+
   @Inject
   public CabalProxyFacetImpl(final CabalPathUtils cabalPathUtils,
-                             final CabalDataAccess cabalDataAccess)
+                             final CabalDataAccess cabalDataAccess,
+                             final CabalParser cabalParser,
+                             final TgzParser tgzParser)
   {
     this.cabalPathUtils = checkNotNull(cabalPathUtils);
     this.cabalDataAccess = checkNotNull(cabalDataAccess);
+    this.cabalParser = checkNotNull(cabalParser);
+    this.tgzParser = checkNotNull(tgzParser);
   }
 
   // HACK: Workaround for known CGLIB issue, forces an Import-Package for org.sonatype.nexus.repository.config
@@ -169,14 +179,15 @@ public class CabalProxyFacetImpl
     StorageFacet storageFacet = facet(StorageFacet.class);
 
     try (TempBlob tempBlob = storageFacet.createTempBlob(content.openInputStream(), CabalDataAccess.HASH_ALGORITHMS)) {
-      Component component = findOrCreateComponent(assetPath);
+      Map<String, Object> attributes = cabalParser.loadAttributes(tgzParser.getCabalFileFromTempBlob(tempBlob.get()));
+      Component component = findOrCreateComponent(assetPath, attributes);
 
       return findOrCreateAsset(tempBlob, content, assetKind, assetPath, component);
     }
   }
 
   @TransactionalStoreBlob
-  protected Component findOrCreateComponent(final String assetPath) {
+  protected Component findOrCreateComponent(final String assetPath, final Map<String, Object> attributes) {
     StorageTx tx = UnitOfWork.currentTx();
     Bucket bucket = tx.findBucket(getRepository());
 
@@ -186,7 +197,8 @@ public class CabalProxyFacetImpl
 
     if (component == null) {
       component = tx.createComponent(bucket, getRepository().getFormat())
-          .name(assetPath);
+          .name(attributes.get("name").toString())
+          .version(attributes.get("version").toString());
     }
     tx.saveComponent(component);
 
