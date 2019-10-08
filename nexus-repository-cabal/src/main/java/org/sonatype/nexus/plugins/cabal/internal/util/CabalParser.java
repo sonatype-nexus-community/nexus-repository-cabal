@@ -52,7 +52,8 @@ public class CabalParser
 
   private void checkIfVersionOrName(final String scan, Map<String, Object> map) {
     if (scan.contains("name") || scan.contains("version")) {
-      String[] results = scan.split(": ");
+      String newLine = scan.replaceAll("\\s", "");
+      String[] results = newLine.split(":");
       map.put(results[0], results[1]);
     }
   }
