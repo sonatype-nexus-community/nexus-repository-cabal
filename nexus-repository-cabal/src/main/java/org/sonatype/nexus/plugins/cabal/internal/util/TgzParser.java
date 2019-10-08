@@ -46,6 +46,7 @@ public class TgzParser
 
             return new ByteArrayInputStream(buf);
           }
+          currentEntry = tais.getNextEntry();
         }
       }
     }
