@@ -37,7 +37,6 @@ import static org.sonatype.nexus.testsuite.testsupport.FormatClientSupport.statu
 public class CabalProxyIT
     extends CabalITSupport
 {
-
   private static final String VERSION = "0.1.0.0";
 
   private static final String NAME_PACKAGE = "AlgoRhythm";
@@ -79,6 +78,14 @@ public class CabalProxyIT
   private static final String PATH_TAR_GZ_PACKAGE = DIRECTORY_PACKAGE + FILE_TAR_GZ_PACKAGE;
 
   private static final String PATH_CABAL_PACKAGE = DIRECTORY_PACKAGE + FILE_CABAL_PACKAGE;
+
+  private static final String PATH_INVALID = DIRECTORY_INVALID + FILE_TAR_GZ_PACKAGE;
+
+  public static final String MIME_GZIP = "application/x-gzip";
+
+  public static final String MIME_TEXT = "text/plain";
+
+  public static final String MIME_JSON = "application/json";
 
   private CabalClient proxyClient;
 
@@ -133,11 +140,14 @@ public class CabalProxyIT
     }
   }
 
+  @Test
+  public void invalidPathsReturn404() throws Exception {
+    assertThat(status(proxyClient.get(PATH_INVALID)), is(HttpStatus.NOT_FOUND));
+  }
 
   @Test
   public void retrievePackageWhenRemoteOnline() throws Exception {
-    proxyClient.get(PATH_TAR_GZ_PACKAGE);
-    assertThat(status(proxyClient.get(PATH_TAR_GZ_PACKAGE)), is(200));
+    assertThat(status(proxyClient.get(PATH_TAR_GZ_PACKAGE)), is(HttpStatus.OK));
 
     final Component component = findComponent(proxyRepo, NAME_PACKAGE);
     assertThat(component.version(), is(VERSION));
@@ -146,47 +156,48 @@ public class CabalProxyIT
     final Asset asset = findAsset(proxyRepo, PATH_TAR_GZ_PACKAGE);
     assertThat(asset.format(), is("cabal"));
     assertThat(asset.name(), is(PATH_TAR_GZ_PACKAGE));
-    assertThat(asset.contentType(), is("application/x-gzip"));
+    assertThat(asset.contentType(), is(MIME_GZIP));
   }
 
   @Test
   public void retrieveCabalFileWhenRemoteOnline() throws Exception {
-    proxyClient.get(PATH_CABAL_PACKAGE);
-
+    assertThat(status(proxyClient.get(PATH_CABAL_PACKAGE)), is(HttpStatus.OK));
     final Asset asset = findAsset(proxyRepo, PATH_CABAL_PACKAGE);
-    assertThat(status(proxyClient.get(PATH_CABAL_PACKAGE)), is(200));
+    assertThat(asset.format(), is("cabal"));
+    assertThat(asset.name(), is(PATH_CABAL_PACKAGE));
+    assertThat(asset.contentType(), is(MIME_TEXT));
   }
 
   @Test
   public void retrieveIncrementalIndexWhenRemoteOnline() throws Exception {
-    proxyClient.get(FILE_INCREMENTAL_INDEX);
-
+    assertThat(status(proxyClient.get(FILE_INCREMENTAL_INDEX)), is(HttpStatus.OK));
     final Asset asset = findAsset(proxyRepo, FILE_INCREMENTAL_INDEX);
-    assertThat(status(proxyClient.get(FILE_INCREMENTAL_INDEX)), is(200));
+    assertThat(asset.name(), is(FILE_INCREMENTAL_INDEX));
+    assertThat(asset.contentType(), is(MIME_GZIP));
   }
 
   @Test
   public void retrievetimeStampWhenRemoteOnline() throws Exception {
-    proxyClient.get(FILE_TIMESTAMP);
-
+    assertThat(status(proxyClient.get(FILE_TIMESTAMP)), is(HttpStatus.OK));
     final Asset asset = findAsset(proxyRepo, FILE_TIMESTAMP);
-    assertThat(status(proxyClient.get(FILE_TIMESTAMP)), is(200));
+    assertThat(asset.name(), is(FILE_TIMESTAMP));
+    assertThat(asset.contentType(), is(MIME_JSON));
   }
 
   @Test
   public void retrieveMirrorsJSONWhenRemoteOnline() throws Exception {
-    proxyClient.get(FILE_MIRRORS);
-
+    assertThat(status(proxyClient.get(FILE_MIRRORS)), is(HttpStatus.OK));
     final Asset asset = findAsset(proxyRepo, FILE_MIRRORS);
-    assertThat(status(proxyClient.get(FILE_MIRRORS)), is(200));
+    assertThat(asset.name(), is(FILE_MIRRORS));
+    assertThat(asset.contentType(), is(MIME_JSON));
   }
 
   @Test
   public void retrieveRootJSONWhenRemoteOnline() throws Exception {
-    proxyClient.get(FILE_ROOT);
-
+    assertThat(status(proxyClient.get(FILE_ROOT)), is(HttpStatus.OK));
     final Asset asset = findAsset(proxyRepo, FILE_ROOT);
-    assertThat(status(proxyClient.get(FILE_ROOT)), is(200));
+    assertThat(asset.name(), is(FILE_ROOT));
+    assertThat(asset.contentType(), is(MIME_JSON));
   }
 
   @Test
@@ -198,7 +209,7 @@ public class CabalProxyIT
     finally {
       server.stop();
     }
-    assertThat(status(proxyClient.get(PATH_TAR_GZ_PACKAGE)), is(200));
+    assertThat(status(proxyClient.get(PATH_TAR_GZ_PACKAGE)), is(HttpStatus.OK));
   }
 
   @After
