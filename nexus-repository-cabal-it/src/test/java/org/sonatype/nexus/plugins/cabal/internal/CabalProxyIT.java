@@ -193,21 +193,17 @@ public class CabalProxyIT
     assertThat(status(proxyClient.get(FILE_ROOT)), is(200));
   }
 
-  //@Test
-  //public void retrieveCabalWhenRemoteOffline() throws Exception {
-  //  Server server = Server.withPort(0).serve("/*")
-  //      .withBehaviours(content("Response"))
-  //      .start();
-  //  try {
-  //    proxyRepo = repos.createCabalProxy("cabal-test-proxy-offline", server.getUrl().toExternalForm());
-  //    proxyClient = cabalClient(proxyRepo);
-  //    proxyClient.get(TEST_PATH);
-  //  }
-  //  finally {
-  //    server.stop();
-  //  }
-  //  assertThat(status(proxyClient.get(TEST_PATH)), is(200));
-  //}
+  @Test
+  public void retrieveCabalWhenRemoteOffline() throws Exception {
+    try {
+      proxyRepo = repos.createCabalProxy("cabal-test-proxy-offline", server.getUrl().toExternalForm());
+      proxyClient.get(PATH_TAR_GZ_PACKAGE);
+    }
+    finally {
+      server.stop();
+    }
+    assertThat(status(proxyClient.get(PATH_TAR_GZ_PACKAGE)), is(200));
+  }
 
   @After
   public void tearDown() throws Exception {
