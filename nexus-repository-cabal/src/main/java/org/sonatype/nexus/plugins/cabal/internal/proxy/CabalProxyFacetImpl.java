@@ -44,7 +44,6 @@ import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
 import org.sonatype.nexus.transaction.UnitOfWork;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.sonatype.nexus.plugins.cabal.internal.util.CabalPathUtils.PACKAGE_FILENAME;
 import static org.sonatype.nexus.repository.storage.AssetEntityAdapter.P_ASSET_KIND;
 
 /**
@@ -89,9 +88,6 @@ public class CabalProxyFacetImpl
     AssetKind assetKind = context.getAttributes().require(AssetKind.class);
     TokenMatcher.State matcherState;
     switch (assetKind) {
-      case PACKAGES:
-        matcherState = cabalPathUtils.matcherState(context);
-        return getAsset(cabalPathUtils.buildAssetPath(matcherState, PACKAGE_FILENAME));
       case ARCHIVE:
         matcherState = cabalPathUtils.matcherState(context);
         return getAsset(cabalPathUtils.buildAssetPath(matcherState));
@@ -130,11 +126,6 @@ public class CabalProxyFacetImpl
     AssetKind assetKind = context.getAttributes().require(AssetKind.class);
     TokenMatcher.State matcherState;
     switch (assetKind) {
-      case PACKAGES:
-        matcherState = cabalPathUtils.matcherState(context);
-        return putMetadata(content,
-            assetKind,
-            cabalPathUtils.buildAssetPath(matcherState, PACKAGE_FILENAME));
       case ARCHIVE:
         matcherState = cabalPathUtils.matcherState(context);
         return putCabalPackage(content,

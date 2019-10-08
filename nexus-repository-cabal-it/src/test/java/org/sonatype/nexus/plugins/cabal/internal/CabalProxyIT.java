@@ -31,16 +31,12 @@ import org.ops4j.pax.exam.Option;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.sonatype.goodies.httpfixture.server.fluent.Behaviours.content;
 import static org.sonatype.goodies.httpfixture.server.fluent.Behaviours.error;
-import static org.sonatype.nexus.plugins.cabal.internal.util.CabalPathUtils.PACKAGE_FILENAME;
 import static org.sonatype.nexus.testsuite.testsupport.FormatClientSupport.status;
 
 public class CabalProxyIT
     extends CabalITSupport
 {
-  // @todo Change test path for your format
-  private static final String TEST_PATH = "some/valid/path/for/your/remote/" + PACKAGE_FILENAME;
 
   private static final String VERSION = "0.1.0.0";
 

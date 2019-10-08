@@ -27,39 +27,21 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @Named
 @Singleton
 public class CabalPathUtils
-{
-  // @todo Change this to a valid filename for your format
-  public static final String PACKAGE_FILENAME = "myPackageFilename.txt";
-
-  // @todo Change this to a valid filename for your format
-  public static final String ASSET_FILENAME = "myAssetFilename.fil";
-
-  public TokenMatcher.State matcherState(final Context context) {
+{ public TokenMatcher.State matcherState(final Context context) {
     return context.getAttributes().require(TokenMatcher.State.class);
   }
 
-  // @todo Change this to a valid token for your format
-  public String version(final TokenMatcher.State state) {
-    return match(state, "version");
-  }
+  public String version(final TokenMatcher.State state) { return match(state, "version"); }
 
-  public String packageName(final TokenMatcher.State state) {
-    return match(state, "packageName");
-  }
+  public String packageName(final TokenMatcher.State state) { return match(state, "packageName"); }
 
-  public String fileName(final TokenMatcher.State state) {
-    return match(state, "fileName");
-  }
+  public String fileName(final TokenMatcher.State state) { return match(state, "fileName"); }
 
   private String match(final TokenMatcher.State state, final String name) {
     checkNotNull(state);
     String result = state.getTokens().get(name);
     checkNotNull(result);
     return result;
-  }
-
-  public String buildAssetPath(final State matcherState, final String assetName) {
-    return String.format("/%s/%s", version(matcherState), assetName);
   }
 
   public String buildAssetPath(final State matcherState) {

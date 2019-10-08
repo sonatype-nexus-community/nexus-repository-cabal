@@ -16,7 +16,6 @@ import javax.inject.Inject
 import javax.inject.Provider
 
 import org.sonatype.nexus.plugins.cabal.internal.security.CabalSecurityFacet
-
 import org.sonatype.nexus.repository.Format
 import org.sonatype.nexus.repository.RecipeSupport
 import org.sonatype.nexus.repository.Type
@@ -44,8 +43,6 @@ import org.sonatype.nexus.repository.view.matchers.LiteralMatcher
 import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher
 
-import static org.sonatype.nexus.plugins.cabal.internal.util.CabalPathUtils.ASSET_FILENAME
-import static org.sonatype.nexus.plugins.cabal.internal.util.CabalPathUtils.PACKAGE_FILENAME
 import static org.sonatype.nexus.repository.http.HttpMethods.GET
 import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
 
@@ -113,8 +110,6 @@ abstract class CabalRecipeSupport
     super(type, format)
   }
 
-  // @todo Add/change matcher methods here
-
   static Matcher packageCabalMatcher() {
     buildTokenMatcherForPatternAndAssetKind("/package/{fileName:.+}.tar.gz", AssetKind.ARCHIVE, GET, HEAD)
   }
@@ -141,10 +136,6 @@ abstract class CabalRecipeSupport
 
   static Matcher rootMatcher() {
     buildLiteralMatcherForPatternAndAssetKind("/root.json", AssetKind.ROOT, GET, HEAD)
-  }
-
-  static Matcher assetCabalMatcher() {
-    buildTokenMatcherForPatternAndAssetKind("/{myTokenName:.+}/${ASSET_FILENAME}", AssetKind.ARCHIVE, GET, HEAD)
   }
 
   static Matcher buildTokenMatcherForPatternAndAssetKind(final String pattern,
