@@ -12,8 +12,6 @@
     Eclipse Foundation. All other trademarks are the property of their respective owners.
 
 -->
-
-
 [Cabal](https://www.haskell.org/cabal/) is a system for building and packaging Haskell libraries and programs.
 
 Full documentation on installing `cabal` can be found on [the Cabal project website](https://www.haskell.org/cabal/#install-upgrade). 
