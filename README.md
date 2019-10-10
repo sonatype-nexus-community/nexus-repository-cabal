@@ -24,7 +24,6 @@
 * [Using Cabal with Nexus Repository Manager 3](#using-cabal-with-nexus-repository-manager-3)
 * [Compatibility with Nexus Repository Manager 3 Versions](#compatibility-with-nexus-repository-manager-3-versions)
 * [Features Implemented In This Plugin](#features-implemented-in-this-plugin)
-   * [Supported Cabal Commands](#supported-cabal-commands)
 * [Installing the plugin](#installing-the-plugin)
    * [Easiest Install](#easiest-install)
    * [Temporary Install](#temporary-install)
@@ -75,7 +74,7 @@ For simplicity, you should check `Enable anonymous access` in the prompts follow
 
 ## Using Cabal With Nexus Repository Manager 3
 
-[We have detailed instructions on how to get started here!](docs/Cabal_USER_DOCUMENTATION.md)
+[We have detailed instructions on how to get started here!](docs/CABAL_USER_DOCUMENTATION.md)
 
 ## Compatibility with Nexus Repository Manager 3 Versions
 
@@ -100,14 +99,6 @@ All released versions can be found [here](https://github.com/sonatype-nexus-comm
 | Hosted  |                      |
 | Group   |                      |
 
-### Supported Cabal Commands
-
-#### Proxy
-
-| Plugin Version               | Nexus Repository Version |
-|------------------------------|--------------------------|
-| `cabal client command`         | :heavy_check_mark:       |
-
 ## Installing the plugin
 
 There are a range of options for installing the cabal plugin. You'll need to build it first, and
@@ -115,10 +106,10 @@ then install the plugin with the options shown below:
 
 ### Easiest Install
 
-Thanks to some upstream work in Nexus Repository (versions newer than 3.15), it's become a LOT easier to install a plugin. To install the `cabal` plugin, follow these steps:
+Thanks to some upstream work in Nexus Repository, it's become a LOT easier to install a plugin. To install the `cabal` plugin, follow these steps:
 
 * Build the plugin with `mvn clean package -PbuildKar`
-* Copy the `nexus-repository-cabal-0.0.1-bundle.kar` file from your `target` folder to the `deploy` folder for your Nexus Repository installation.
+* Copy the `nexus-repository-cabal-<version>-bundle.kar` file from your `target` folder to the `deploy` folder for your Nexus Repository installation.
 
 Once you've done this, go ahead and either restart Nexus Repo, or go ahead and start it if it wasn't running to begin with.
 
