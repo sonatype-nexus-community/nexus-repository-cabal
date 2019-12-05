@@ -4,19 +4,6 @@ orbs:
   github-maven-deploy: github-maven-deploy/github-maven-deploy@1.0.5
   circleci-maven-release-orb: sonatype-nexus-community/circleci-maven-release-orb@0.0.10
 
-# mvn-build-test-command: &mvn-build-test-command
-#   mvn-build-test-command: mvn clean verify -PbuildKar -Dit
-
-# mvn-deploy-command: &mvn-deploy-command
-#   mvn-deploy-command: mvn -s .circleci/.maven.xml clean deploy -PbuildKar -DdeployAtEnd=true -DperformRelease=true -DskipTests -Dspotbugs.skip=true
-#   context: rso-base
-
-# mvn-collect-artifacts-command: &mvn-collect-artifacts-command
-#   mvn-collect-artifacts-command: |
-#     mkdir -p ~/project/artifacts/junit/
-#     find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/project/artifacts/junit/ \;
-#     cp ~/project/nexus-repository-cabal-it/target/failsafe-reports/*.xml ~/project/artifacts/junit/
-
 workflows:
   build-and-test:
     jobs:
@@ -36,7 +23,7 @@ workflows:
       - circleci-maven-release-orb/run-maven-release:
           requires:
             - approve-release
-          ssh-fingerprints: "TODO: FILL IN"
+          ssh-fingerprints: "fe:58:25:54:f7:d6:1f:f6:c7:25:9e:21:f9:8a:5a:3f"
           context: rso-base
           filters:
             branches:
