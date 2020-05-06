@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.sonatype.nexus.plugins</groupId>
     <artifactId>nexus-repository-cabal-parent</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.0.3</version>
   </parent>
 
   <artifactId>nexus-repository-cabal-it</artifactId>
@@ -91,7 +91,7 @@
     <dependency>
       <groupId>org.sonatype.nexus.plugins</groupId>
       <artifactId>nexus-repository-cabal</artifactId>
-      <version>0.0.3-SNAPSHOT</version>
+      <version>0.0.3</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -149,7 +149,7 @@
               <target>
                 <unzip src="${org.sonatype.nexus.testsuite:nexus-it-suite-data:jar}" dest="${project.build.directory}/it-resources">
                   <patternset>
-                    <exclude name="META-INF/**"/>
+                    <exclude name="META-INF/**" />
                   </patternset>
                 </unzip>
               </target>
